@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #f4f1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  color: #1f2933;
+  background:
+    linear-gradient(90deg, rgba(31, 41, 51, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(31, 41, 51, 0.035) 1px, transparent 1px),
+    #f4f1ea;
+  background-size: 32px 32px;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button,
+textarea {
+  font: inherit;
+}
