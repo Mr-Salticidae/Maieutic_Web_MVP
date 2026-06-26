@@ -124,3 +124,35 @@ MAIEUTIC_MOCK=1
 - 不做复杂 Agent。
 - 不做 North Star / Living Questions / Journey / Shift Graph / Cognitive Biography。
 - 不把 Insight / Beacon 改回每轮强制输出。
+
+## 目录结构
+
+```text
+Maieutic_Web_MVP/
+├── src/                          # Next.js 应用源码（对话界面 + /api/chat）
+├── skill/                        # Maieutic 技能定义源（网页实现所依据的规格）
+│   ├── SKILL.md                  # 技能主文件：身份、工作流、输出契约
+│   ├── README.md
+│   ├── prompts/                  # 模式分类器 + 四模式 prompt + 系统/输出 prompt
+│   └── examples/                 # 知识/探索/反思/创作/研究增强 五类示例
+└── docs/
+    ├── Maieutic_Web_MVP产品化计划书.md
+    ├── Maieutic_Web_MVP产品化_交接给_Codex.md
+    ├── Maieutic_Web_MVP测试用例.md
+    ├── 开发说明.md
+    ├── Maieutic_项目总纲_背景愿景宪章归档.md   # 项目总纲：背景 / 愿景 / 宪章
+    ├── competition/              # 参赛材料
+    │   ├── Maieutic_TRAE_AI_创造力大赛参赛方案.docx
+    │   └── Maieutic_报名帖.md
+    └── proposal-html/            # 提案 HTML 页面 + 字体
+        └── maieutic-proposal.html
+```
+
+### 关键文档索引
+
+- 技能规格：[`skill/SKILL.md`](skill/SKILL.md)
+- 项目总纲（背景/愿景/宪章）：[`docs/Maieutic_项目总纲_背景愿景宪章归档.md`](docs/Maieutic_项目总纲_背景愿景宪章归档.md)
+- 参赛方案：[`docs/competition/Maieutic_TRAE_AI_创造力大赛参赛方案.docx`](docs/competition/Maieutic_TRAE_AI_创造力大赛参赛方案.docx)
+- 提案页面：[`docs/proposal-html/maieutic-proposal.html`](docs/proposal-html/maieutic-proposal.html)
+- 产品化计划书：[`docs/Maieutic_Web_MVP产品化计划书.md`](docs/Maieutic_Web_MVP产品化计划书.md)
+- 测试用例：[`docs/Maieutic_Web_MVP测试用例.md`](docs/Maieutic_Web_MVP测试用例.md)
