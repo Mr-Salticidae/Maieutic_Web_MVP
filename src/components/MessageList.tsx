@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm";
 import { BeaconCard } from "./BeaconCard";
 import { InsightCard } from "./InsightCard";
 import type { ChatResponse } from "@/lib/types";
+import { useState } from "react";
 
 export type UiMessage = {
   id: string;
@@ -15,6 +16,31 @@ type MessageListProps = {
   messages: UiMessage[];
   loading: boolean;
 };
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard not available
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="rounded-md px-2 py-1 text-[11px] font-medium text-ink-400 transition-colors hover:bg-paper-200 hover:text-ink-600"
+      title="复制回复"
+    >
+      {copied ? "已复制" : "复制"}
+    </button>
+  );
+}
 
 export function MessageList({ messages, loading }: MessageListProps) {
   if (messages.length === 0) {
@@ -100,6 +126,11 @@ export function MessageList({ messages, loading }: MessageListProps) {
             {message.result?.beacon ? (
               <div className="mt-3">
                 <BeaconCard beacon={message.result.beacon} />
+              </div>
+            ) : null}
+            {message.role === "assistant" ? (
+              <div className="mt-3 flex justify-end">
+                <CopyButton text={message.content} />
               </div>
             ) : null}
           </article>
