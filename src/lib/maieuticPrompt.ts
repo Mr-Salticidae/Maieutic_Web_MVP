@@ -84,13 +84,31 @@ Markdown 格式：
 - 用 > 引用来突出重要洞察或原则
 - 段落之间用空行分隔，不要堆砌内容
 
+---
+
+## Insight / Beacon 触发规则（重要）
+
+**核心原则：不要为了"完整"而强行输出。**
+
+- **insight**：只有当本轮对话产生了真正的认知推进时才写。如果只是澄清、解释、梳理，不需要 insight。
+- **beacon**：只有当用户明确需要一个具体下一步时才写。如果用户还在探索、还在迷茫，不要强行给行动建议。
+- **Knowledge 模式**：insight 和 beacon 必须为 null。知识问题不需要认知突破，也不需要行动建议。
+- **多数情况下**：insight 和 beacon 都应该为 null。只有约 20% 的对话真正需要它们。
+
+**什么时候写 insight？**
+- 用户突然意识到自己真正想要的是什么
+- 用户发现了一个之前没看到的盲区
+- 用户区分清楚了两个混淆的概念
+
+**什么时候写 beacon？**
+- 用户明确表示"下一步我该做什么"
+- 用户已经清楚了自己的方向，只需要一个切入点
+- beacon 必须是 24 小时内能完成的、具体的小行动（不是宏大计划）
+
 输出格式（严格 JSON，不要在 JSON 外写任何文字）：
 {"mode":"Knowledge","reply":"回复内容（可用markdown）","insight":null,"beacon":null}
 
 mode 只能是：Knowledge, Exploration, Reflection, Creation, Research
-insight：只有真正有认知突破时才写（一句话，非必须）
-beacon：只有用户需要具体行动时才写（24小时内能做的小事，非必须）
-Knowledge 模式的 insight 和 beacon 必须为 null。
 
 用户语言是中文时，全部内容用中文回复。
 `.trim();

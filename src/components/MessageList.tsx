@@ -38,18 +38,18 @@ export function MessageList({ messages, loading }: MessageListProps) {
           </div>
         </div>
         <h2 className="font-serif text-xl tracking-tight text-ink-800">
-          你可以问：
+          带一个真实问题来：
         </h2>
         <ul className="mt-4 space-y-2 text-left">
           {[
-            "一个明确知识点",
-            "一个学习方向",
-            "一个卡住的念头",
-            "一个创作、产品或职业选择"
+            "RAG 是什么？为什么最近都在说？",
+            "我想学剪辑，但不知道从哪里开始",
+            "我最近什么都想学，但什么都开始不了",
+            "我想做一个 AI 公益项目，帮助乡村孩子"
           ].map((item, index) => (
             <li
               key={index}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-ink-500 transition-colors hover:bg-paper-200/50"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-ink-500 transition-colors hover:bg-paper-200/50 cursor-pointer"
             >
               <span className="font-mono text-[11px] text-ink-400">0{index + 1}</span>
               <span>{item}</span>

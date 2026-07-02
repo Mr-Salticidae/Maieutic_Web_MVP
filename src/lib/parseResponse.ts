@@ -136,7 +136,7 @@ export function parseModelResponse(raw: string): ChatResponse {
       beacon: nullableText(parsed.beacon) ? unescapeJsonString(parsed.beacon!) : null
     };
   } catch {
-    console.warn("JSON parse failed, trying fixUnescapedQuotes");
+    // JSON parse failed, try fixing unescaped quotes
   }
 
   text = fixUnescapedQuotes(text);
@@ -151,7 +151,7 @@ export function parseModelResponse(raw: string): ChatResponse {
       beacon: nullableText(parsed.beacon) ? unescapeJsonString(parsed.beacon!) : null
     };
   } catch {
-    console.warn("JSON parse still failed after fixing quotes, trying regex fallback");
+    // JSON parse still failed, try regex fallback
   }
 
   const modeStr = extractFieldValue(text, "mode");

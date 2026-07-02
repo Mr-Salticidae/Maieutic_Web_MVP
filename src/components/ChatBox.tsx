@@ -92,7 +92,12 @@ export function ChatBox() {
 
       setMessages((current) => [...current, assistantMessage].slice(-MAX_HISTORY));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Maieutic 暂时没有回应成功。");
+      const errorMessage = requestError instanceof Error ? requestError.message : "";
+      if (errorMessage.includes("配置") || errorMessage.includes("API") || errorMessage.includes("provider")) {
+        setError("AI 模型暂时不可用。请检查 API 配置，或稍后再试。");
+      } else {
+        setError("Maieutic 暂时没有回应成功。请稍后再试，或换一种方式描述你的问题。");
+      }
     } finally {
       setLoading(false);
     }
@@ -134,7 +139,7 @@ export function ChatBox() {
 
       <section className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="flex min-h-[65vh] flex-col overflow-hidden rounded-2xl border border-line bg-paper-50/80 shadow-card backdrop-blur-sm">
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5">
             <MessageList messages={messages} loading={loading} />
             <div ref={scrollRef} />
           </div>
@@ -175,7 +180,7 @@ export function ChatBox() {
           </form>
         </div>
 
-        <aside className="animate-fade-in">
+        <aside className="hidden animate-fade-in lg:block">
           <div className="sticky top-6 space-y-5">
             <div className="rounded-xl border border-line bg-paper-50/80 p-5 shadow-soft">
               <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-500">
