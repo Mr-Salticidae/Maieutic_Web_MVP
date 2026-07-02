@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { BeaconCard } from "./BeaconCard";
 import { InsightCard } from "./InsightCard";
 import type { ChatResponse } from "@/lib/types";
@@ -17,50 +19,104 @@ type MessageListProps = {
 export function MessageList({ messages, loading }: MessageListProps) {
   if (messages.length === 0) {
     return (
-      <div className="grid gap-3 rounded-[8px] border border-dashed border-line bg-paper/70 p-5 text-sm leading-6 text-bluegray">
-        <p>你可以带来一个真实问题。</p>
-        <ul className="grid gap-2">
-          <li>一个明确知识点</li>
-          <li>一个学习方向</li>
-          <li>一个卡住的念头</li>
-          <li>一个创作、产品或职业选择</li>
+      <div className="mx-auto max-w-md animate-fade-in py-12 text-center">
+        <div className="mb-6 flex justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-white shadow-soft">
+            <svg
+              className="h-5 w-5 text-moss-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
+            </svg>
+          </div>
+        </div>
+        <h2 className="font-serif text-xl tracking-tight text-ink-800">
+          你可以问：
+        </h2>
+        <ul className="mt-4 space-y-2 text-left">
+          {[
+            "一个明确知识点",
+            "一个学习方向",
+            "一个卡住的念头",
+            "一个创作、产品或职业选择"
+          ].map((item, index) => (
+            <li
+              key={index}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-ink-500 transition-colors hover:bg-paper-200/50"
+            >
+              <span className="font-mono text-[11px] text-ink-400">0{index + 1}</span>
+              <span>{item}</span>
+            </li>
+          ))}
         </ul>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {messages.map((message) => (
-        <article
+    <div className="space-y-5">
+      {messages.map((message, index) => (
+        <div
           key={message.id}
-          className={
-            message.role === "user"
-              ? "ml-auto max-w-[86%] rounded-[8px] bg-ink px-4 py-3 text-sm leading-6 text-white"
-              : "max-w-[92%] rounded-[8px] border border-line bg-paper px-4 py-4 text-sm leading-6 text-ink shadow-sm"
-          }
+          className={`animate-slide-up ${message.role === "user" ? "flex justify-end" : "flex justify-start"}`}
+          style={{ animationDelay: `${index * 30}ms` }}
         >
-          {message.role === "assistant" && message.result?.mode ? (
-            <div className="mb-3 inline-flex rounded-[6px] border border-line bg-mist px-2 py-1 text-xs font-medium text-bluegray">
-              {message.result.mode} Mode
-            </div>
-          ) : null}
-          <p className="whitespace-pre-wrap">{message.content}</p>
-          {message.result?.insight ? (
-            <div className="mt-4">
-              <InsightCard insight={message.result.insight} />
-            </div>
-          ) : null}
-          {message.result?.beacon ? (
-            <div className="mt-4">
-              <BeaconCard beacon={message.result.beacon} />
-            </div>
-          ) : null}
-        </article>
+          <article
+            className={
+              message.role === "user"
+                ? "max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-br-md bg-ink-900 px-4 py-3 text-[14px] leading-relaxed text-paper-50 shadow-soft"
+                : "max-w-[95%] sm:max-w-[90%] rounded-2xl rounded-tl-md border border-line bg-white px-4 py-4 text-[14px] leading-relaxed text-ink-800 shadow-soft"
+            }
+          >
+            {message.role === "assistant" && message.result?.mode ? (
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-moss-50 px-2 py-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-moss-500" />
+                <span className="font-mono text-[10px] uppercase tracking-wider text-moss-700">
+                  {message.result.mode}
+                </span>
+              </div>
+            ) : null}
+            {message.role === "assistant" ? (
+              <div className="markdown-body">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div className="whitespace-pre-wrap">{message.content}</div>
+            )}
+            {message.result?.insight ? (
+              <div className="mt-4">
+                <InsightCard insight={message.result.insight} />
+              </div>
+            ) : null}
+            {message.result?.beacon ? (
+              <div className="mt-3">
+                <BeaconCard beacon={message.result.beacon} />
+              </div>
+            ) : null}
+          </article>
+        </div>
       ))}
       {loading ? (
-        <div className="max-w-[92%] rounded-[8px] border border-line bg-paper px-4 py-4 text-sm text-bluegray">
-          Maieutic 正在整理回应...
+        <div className="flex justify-start animate-fade-in">
+          <div className="max-w-[95%] sm:max-w-[90%] rounded-2xl rounded-tl-md border border-line bg-white px-4 py-4 shadow-soft">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                <span className="h-2 w-2 animate-pulse-soft rounded-full bg-ink-300" style={{ animationDelay: "0ms" }} />
+                <span className="h-2 w-2 animate-pulse-soft rounded-full bg-ink-300" style={{ animationDelay: "150ms" }} />
+                <span className="h-2 w-2 animate-pulse-soft rounded-full bg-ink-300" style={{ animationDelay: "300ms" }} />
+              </div>
+              <span className="text-[13px] text-ink-400">Maieutic 正在思考…</span>
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

@@ -9,15 +9,6 @@ const allowedModes = new Set<MaieuticMode>([
   "Unknown"
 ]);
 
-function cleanFence(text: string) {
-  return text
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/\s*```$/i, "")
-    .trim();
-}
-
 function normalizeMode(value: unknown): MaieuticMode {
   if (typeof value !== "string") return "Unknown";
   const clean = value.replace(/\s*Mode$/i, "").trim();
@@ -31,20 +22,153 @@ function nullableText(value: unknown) {
   return clean;
 }
 
+function unescapeJsonString(value: string): string {
+  return value
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\r")
+    .replace(/\\t/g, "\t")
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
+    .replace(/\\\\/g, "\\")
+    .replace(/\\`/g, "`");
+}
+
+function extractFieldValue(jsonStr: string, field: string): string | null {
+  const pattern = new RegExp(`"${field}":\\s*"([^"]*)"`, 'g');
+  const match = pattern.exec(jsonStr);
+  if (match) {
+    return match[1];
+  }
+
+  const fallbackPattern = new RegExp(`"${field}":\\s*"`, 'g');
+  const fallbackMatch = fallbackPattern.exec(jsonStr);
+  if (!fallbackMatch) return null;
+
+  const start = fallbackMatch.index + fallbackMatch[0].length;
+  let i = start;
+  let escape = false;
+
+  while (i < jsonStr.length) {
+    const ch = jsonStr[i];
+
+    if (escape) {
+      escape = false;
+      i++;
+      continue;
+    }
+
+    if (ch === "\\") {
+      escape = true;
+      i++;
+      continue;
+    }
+
+    if (ch === '"') {
+      const nextChar = jsonStr[i + 1];
+      if (nextChar === ',' || nextChar === '}') {
+        return jsonStr.slice(start, i);
+      }
+    }
+
+    i++;
+  }
+
+  return jsonStr.slice(start);
+}
+
+function fixUnescapedQuotes(jsonStr: string): string {
+  let result = '';
+  let inString = false;
+  let escape = false;
+  
+  for (let i = 0; i < jsonStr.length; i++) {
+    const ch = jsonStr[i];
+    
+    if (escape) {
+      result += ch;
+      escape = false;
+      continue;
+    }
+    
+    if (ch === '\\') {
+      result += ch;
+      escape = true;
+      continue;
+    }
+    
+    if (ch === '"') {
+      if (!inString) {
+        inString = true;
+        result += ch;
+      } else {
+        const nextChar = jsonStr[i + 1];
+        if (nextChar === ',' || nextChar === '}' || nextChar === ':') {
+          inString = false;
+          result += ch;
+        } else {
+          result += '\\"';
+        }
+      }
+      continue;
+    }
+    
+    result += ch;
+  }
+  
+  return result;
+}
+
 export function parseModelResponse(raw: string): ChatResponse {
-  const text = cleanFence(raw);
+  let text = raw
+    .trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
 
   try {
     const parsed = JSON.parse(text) as Partial<ChatResponse>;
+    const reply = typeof parsed.reply === "string" && parsed.reply.trim() ? parsed.reply.trim() : text;
     return {
       mode: normalizeMode(parsed.mode),
-      reply: typeof parsed.reply === "string" && parsed.reply.trim() ? parsed.reply.trim() : text,
-      insight: nullableText(parsed.insight),
-      beacon: nullableText(parsed.beacon)
+      reply: unescapeJsonString(reply),
+      insight: nullableText(parsed.insight) ? unescapeJsonString(parsed.insight!) : null,
+      beacon: nullableText(parsed.beacon) ? unescapeJsonString(parsed.beacon!) : null
     };
   } catch {
-    return parseMarkdownFallback(text);
+    console.warn("JSON parse failed, trying fixUnescapedQuotes");
   }
+
+  text = fixUnescapedQuotes(text);
+
+  try {
+    const parsed = JSON.parse(text) as Partial<ChatResponse>;
+    const reply = typeof parsed.reply === "string" && parsed.reply.trim() ? parsed.reply.trim() : raw;
+    return {
+      mode: normalizeMode(parsed.mode),
+      reply: unescapeJsonString(reply),
+      insight: nullableText(parsed.insight) ? unescapeJsonString(parsed.insight!) : null,
+      beacon: nullableText(parsed.beacon) ? unescapeJsonString(parsed.beacon!) : null
+    };
+  } catch {
+    console.warn("JSON parse still failed after fixing quotes, trying regex fallback");
+  }
+
+  const modeStr = extractFieldValue(text, "mode");
+  const replyStr = extractFieldValue(text, "reply");
+  const insightStr = extractFieldValue(text, "insight");
+  const beaconStr = extractFieldValue(text, "beacon");
+
+  if (modeStr && replyStr) {
+    return {
+      mode: normalizeMode(modeStr),
+      reply: unescapeJsonString(replyStr),
+      insight: nullableText(insightStr) ? unescapeJsonString(insightStr!) : null,
+      beacon: nullableText(beaconStr) ? unescapeJsonString(beaconStr!) : null
+    };
+  }
+
+  return parseMarkdownFallback(text);
 }
 
 function parseMarkdownFallback(text: string): ChatResponse {

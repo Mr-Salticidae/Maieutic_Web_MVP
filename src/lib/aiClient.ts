@@ -56,28 +56,41 @@ async function callProvider(config: ProviderConfig, messages: ChatMessage[]) {
 
 async function callOpenAICompatible(config: ProviderConfig, messages: ChatMessage[]) {
   const baseUrl = config.baseUrl || "https://api.openai.com/v1";
+  const isClaudeModel = config.model.toLowerCase().includes("claude");
+  
+  const requestBody: Record<string, unknown> = {
+    model: config.model,
+    messages: [
+      { role: "system", content: MAIEUTIC_SYSTEM_PROMPT },
+      ...messages.map((message) => ({ role: message.role, content: message.content }))
+    ]
+  };
+  
+  if (!isClaudeModel) {
+    requestBody.temperature = 0.2;
+    requestBody.response_format = { type: "json_object" as const };
+  }
+  
+  console.log("AI Request:", JSON.stringify({ model: config.model, baseUrl, isClaudeModel }, null, 2));
+  
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.apiKey}`
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: "system", content: MAIEUTIC_SYSTEM_PROMPT },
-        ...messages.map((message) => ({ role: message.role, content: message.content }))
-      ],
-      temperature: 0.4,
-      response_format: { type: "json_object" }
-    })
+    body: JSON.stringify(requestBody)
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI-compatible request failed: ${response.status} ${await response.text()}`);
+    const errorText = await response.text();
+    console.error("AI Response Error:", response.status, errorText);
+    throw new Error(`OpenAI-compatible request failed: ${response.status} ${errorText}`);
   }
 
   const data = await response.json();
+  console.log("AI Response:", JSON.stringify(data, null, 2).slice(0, 2000));
+  
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== "string") throw new Error("OpenAI-compatible response missing content");
   return parseModelResponse(content);
@@ -95,7 +108,7 @@ async function callAnthropic(config: ProviderConfig, messages: ChatMessage[]) {
     body: JSON.stringify({
       model: config.model,
       max_tokens: 1200,
-      temperature: 0.4,
+      temperature: 0.2,
       system: MAIEUTIC_SYSTEM_PROMPT,
       messages: messages.map((message) => ({
         role: message.role,
