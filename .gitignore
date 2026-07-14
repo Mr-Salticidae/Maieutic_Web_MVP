@@ -10,3 +10,4 @@ yarn-error.log*
 pnpm-debug.log*
 *.log
 tsconfig.tsbuildinfo
+api-proxy-hardcoded/
